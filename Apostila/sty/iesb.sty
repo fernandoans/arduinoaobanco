@@ -1,0 +1,136 @@
+%-----------------------------------------------------------------------
+% Pacotes Necessários
+%-----------------------------------------------------------------------
+\usepackage[brazil]{babel} % padronizar a linguagem
+\usepackage[utf8]{inputenc} % permitir a acentuação
+\usepackage[protrusion=true,expansion=true]{microtype} % obter melhor tipografia
+\usepackage[svgnames]{xcolor} % habitar cores para 'svgnames'
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption}
+\usepackage{color}  % definir cores
+\usepackage{graphicx} % adicionar imagens
+\usepackage{fix-cm}  % customizar o tamanho das fontes
+\usepackage{sectsty} % habilitar a customização dos títulos das seções
+\usepackage{fancyhdr} % definir cabeçalhos e rodapés
+\usepackage{listings} % listagens
+\usepackage[ddmmyyyy]{datetime} % mostrar a data
+\usepackage{lipsum} % gerar um texto randomico (será tirado ao final)
+\usepackage{titling} % Permite a configuração do título
+\usepackage{url} % codigo para as URLs
+\usepackage{color,colortbl,multirow}
+\usepackage{ulem}
+\usepackage{array} % Para usar tabelas
+\usepackage{amsmath}
+\usepackage[a4paper, inner=1.5cm, outer=2cm, top=2cm, bottom=3cm, 
+bindingoffset=1cm]{geometry}
+% \usepackage{lastpage} % identifica a numeração da última página
+\usepackage{mathtools}
+\usepackage{enumerate} % simplicidade para as listas
+\usepackage{enumitem} % para usar o noitemsep
+\usepackage{float}
+\usepackage{appendix}
+\usepackage{titlesec}
+
+%-----------------------------------------------------------------------
+% Definições Iniciais
+%-----------------------------------------------------------------------
+
+% Espaçamento dos capítulos
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{5pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{-50pt}{0pt}
+
+% Espaçamento entre as seções
+\titlespacing*{\section}
+{0pt}{1.5ex}{1.0ex}
+\titlespacing*{\subsection}
+{0pt}{1.5ex}{1.0ex}
+
+% Espaçamento após a figura
+\setlength{\belowcaptionskip}{-1em} 
+
+% Definições para Tabela
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\setlength{\tabcolsep}{18pt}
+\renewcommand{\arraystretch}{1.4}
+
+% Aumentar a quantidade de elementos da matriz
+\setcounter{MaxMatrixCols}{17}
+% modificar toda a fonte de todas as seções
+\allsectionsfont{\usefont{OT1}{phv}{b}{n}}
+
+\addto\captionsenglish{ % modificar os nomes do ingles
+  \renewcommand{\abstractname}{Resumo}
+  \renewcommand{\bibname}{Consulte também...}
+  \renewcommand{\contentsname}{Sumário}
+  \renewcommand{\listfigurename}{Figuras}
+  \renewcommand{\lstlistingname}{Listagem}
+  \renewcommand{\lstlistlistingname}{Listagens}
+  \renewcommand{\refname}{Referências}
+  \renewcommand{\appendixname}{Anexo} % Trocar Apendice por Anexo
+}
+
+% Definição para as caixas de listagens
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstset {
+	aboveskip=3mm,
+	backgroundcolor=\color{backcolour},
+	basicstyle={\small\ttfamily},
+	belowskip=3mm,
+	breaklines=true,
+	breakatwhitespace=true,
+	columns=flexible,
+	commentstyle=\textit,
+	frame=tb,
+	keepspaces=true,
+	keywordstyle=\color{blue}\bfseries,
+	language=Java, % Python, HTML, CSS
+	numbers=left,
+	numbersep=5pt,
+	numberstyle=\tiny\color{codegray},
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=3,
+	literate=%
+	{á}{{\'a}}1
+	{é}{{\'e}}1
+	{í}{{\'i}}1
+	{ó}{{\'o}}1
+	{ú}{{\'u}}1
+	{ê}{{\^e}}1
+	{ã}{{\~a}}1
+	{õ}{{\~o}}1
+	{ç}{{\c{c}}}1          
+	{Á}{{\'A}}1
+	{É}{{\'E}}1
+	{Í}{{\'I}}1
+	{Ó}{{\'O}}1
+	{Ú}{{\'U}}1
+	{Ê}{{\^E}}1
+	{Ã}{{\~A}}1
+	{Õ}{{\~O}}1
+	{Ç}{{\c{C}}}1 
+}
+
+% Espaçamento dos Parágrafos
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+
+% Cabeçalhos e Rodapés
+\pagestyle{fancy}
+
+\fancypagestyle{firstpage}{%
+	\lhead{\includegraphics[scale = 0.5]{images/logo.png}}
+	\chead{}
+	\rhead{}
+}
+
+\lhead{\includegraphics[width=1.0cm]{images/logo.png}}
+\chead{\sffamily \color{black!80} \rttitulo}
+\rhead{}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
