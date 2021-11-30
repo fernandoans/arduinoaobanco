@@ -276,7 +276,7 @@ Criamos uma conexão com o banco, e abrimos uma seção para essa conexão. Em s
 
 \subsection*{Apache Cassandra - Tipo: Orientado a Coluna}
 Antes de qualquer atividade no Python precisamos acessar o \textbf{CQL} do banco Apache Cassandra para digitarmos os seguintes comandos para criarmos \textit{KeySpace}: \\
-{\ttfamily cqlsh> CREATE KEYSPACE coleta WITH replication = {'class': 'SimpleStrategy', \\ 'replication\_factor': 1};} 
+{\ttfamily cqlsh> CREATE KEYSPACE coleta WITH replication = \{'class':'SimpleStrategy', \\ 'replication\_factor':1\};} 
 
 E a tabela que receberá os dados: \\
 {\ttfamily cqlsh> use coleta;} \\
