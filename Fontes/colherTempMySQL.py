@@ -1,18 +1,19 @@
 # Bibliotecas
-import psycopg2
+# python -m pip install mysql-connector-python
+import mysql.connector
 import serial
 import simplejson
 from datetime import datetime
 
 
-def gravar_dados(con, JSON):
+def gravar_dados(conn, JSON):
     try:
-        cursor = con.cursor()
+        cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO projetoint.dados (datahora, ldr, tempC, tempF)
+            INSERT INTO dados (datahora, ldr, tempC, tempF)
             VALUES (%(data)s, %(lums)s, %(grauC)s, %(grauF)s);
             """, JSON)
-        con.commit()
+        conn.commit()
         count = cursor.rowcount
         print(count, "Registro inserido com sucesso!")
     except (Exception) as error:
@@ -21,8 +22,12 @@ def gravar_dados(con, JSON):
 
 def ler_dados_serial():
     ser = serial.Serial('/dev/ttyACM0', 9600, timeout=5)
-    con = psycopg2.connect(
-        "host=localhost port=5432 dbname=postgres user=postgres password=postgres")
+    con = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="projetoint"
+    )
     i = 0
     while i < 10:
         try:

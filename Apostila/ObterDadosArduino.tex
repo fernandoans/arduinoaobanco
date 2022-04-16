@@ -1,7 +1,7 @@
 \documentclass[a4paper,11pt]{article}
 
 % Identificação
-\newcommand{\rttitulo}{Do Arduino ao Banco de Dados SQL ou NoSQL}
+\newcommand{\rttitulo}{Do Arduino ao Banco de Dados \\ SQL ou NoSQL}
 \usepackage{sty/iesb}
 
 %----------------------------------------------------------------------
@@ -13,7 +13,7 @@
 \begin{center}
 	\hfill \break
 	{ \huge \bfseries \rttitulo} \\[0.2 cm]
-	Fernando Antonio Fernandes Anselmo
+	Fernando Antonio Fernandes Anselmo - Versão 2.0
 	\rule{\linewidth}{0.2 mm} \\[0.4 cm]
 \end{center}
 
@@ -27,7 +27,7 @@ Como fonte de dados utilizaremos os cinco bancos a seguir:
 	\caption{Bancos de Dados utilizados}
 \end{figure}
 
-Utilizaremos no padrão SQL o \textbf{Postgres} e alternativamente quatro NoSQL: \textbf{MongoDB} representando o tipo orientado a Documento, \textbf{Redis} orientado a Chave-Valor, \textbf{Neo4j} orientado a Grafo e \textbf{Apache Cassandra} orientado a Coluna, vai ser uma experiência interessante e comparativa pois podemos assim definir qual desses se encaixa melhor em um projeto que pretendemos realizar. Lembre-se apenas que ideia não é julgarmos, mas como característica comparativa e de aprendizado, pois cada banco de dados possui suas forças e fraquezas.
+Utilizaremos no padrão SQL os SGBDR mais conhecidos do mercado \textbf{MySQL} e \textbf{Postgres}, além disso, alternativamente quatro NoSQL: \textbf{MongoDB} representando o tipo orientado a Documento, \textbf{Redis} orientado a Chave-Valor, \textbf{Neo4j} orientado a Grafo e \textbf{Apache Cassandra} orientado a Coluna, vai ser uma experiência interessante e comparativa pois podemos assim definir qual desses se encaixa melhor em um projeto que pretendemos realizar. Lembre-se apenas que ideia não é julgarmos, mas como característica comparativa e de aprendizado, pois cada banco de dados possui suas forças e fraquezas.
 
 Para realizar o trabalho de intermediário (ou seja) quem lerá os dados da serial e enviará para o banco de dados será a linguagem Python. Essa é conhecida por sua simplicidade e facilidade de uso. Usaremos a porta serial como meio de obtermos os dados, assim é necessário instalar a biblioteca \textbf{PySerial}: \\
 {\ttfamily\$ pip install pyserial}
@@ -102,7 +102,109 @@ Ao ativarmos a Serial Monitor obtemos as seguintes respostas:
 \textbf{NOTA}. Aqui estamos usando o tempo de 5 segundos apenas como característica de teste, mas na prática podemos aumentar para minutos pois não existe uma diferença muito grande de temperatura ou luminosidade em um intervalo de tempo em segundos. Qual o motivo de usamos um sensor de luminosidade juntamente como um de temperatura? Existe uma relação entre essas grandezas, e esse é o ponto de partida para uma interessante pesquisa podemos tentar explorar esse assunto em futuros trabalhos.
 
 \section*{Banco de dados padrão SQL}
-O primeiro banco de dados que utilizaremos é o Postgres. \textbf{PostgreSQL}, também conhecido como Postgres, é um SGBD (Sistema Gerenciador de Banco de Dados) relacional gratuito e de código aberto que enfatiza a extensibilidade e conformidade com padrão SQL. Seu nome refere-se às suas origens como sucessor do banco \textbf{Ingres} e desenvolvido na Universidade da Califórnia, em \textit{Berkeley}. Este deve estar instalado corretamente em seu ambiente. Neste criamos um esquema: \\
+Esse tipo de Banco trabalha com SQL (Linguagem de Consulta Estruturada, do inglês \textit{Structured Query Language}) como interface. Normalmente Bancos de dados nesse padrão são conhecidos como SGBDR - Sistema de Gerenciamento de Banco de Dados Relacional (ou RDBMS do inglês Relational Database Manager System).
+
+\subsection*{MySQL}
+O primeiro banco de dados que utilizaremos é o MySQL. \textbf{MySQL} é um SGBDR gratuito e de código aberto. Seu nome é uma combinação de "My", o nome da filha do co-fundador Michael Widenius, e "SQL", a abreviação de \textit{Structured Query Language}. É atualmente um dos bancos mais populares, e atualmente pertence a \textit{Oracle Corporation}, com mais de 10 milhões de instalações pelo mundo. 
+
+Após estar instalado corretamente em seu ambiente. Criamos um database: \\
+{\ttfamily create database projetoint}
+
+Este tipo de SGBDR utiliza databases para separar as tabelas e permitir uma melhor organização. Usamos esse database: \\
+{\ttfamily use projetoint}
+
+E criamos a seguinte entidade:
+\begin{lstlisting}[]
+CREATE TABLE dados (
+  datahora timestamp NOT NULL,
+  ldr int4 NOT NULL,
+  tempC float8 NOT NULL,
+  tempF float8 NOT NULL,
+  CONSTRAINT ldr_pkey PRIMARY KEY (datahora)
+);
+\end{lstlisting}
+
+Nossa entidade possui os campos: \textbf{datahora} como chave primária que contém a data e hora da coleta, \textbf{ldr} com o valor do sensor de luminosidade em uma escala de 0 a 100, \textbf{tempC} para o valor do sensor da temperatura em graus na escala Celsius e \textbf{tempF} para o valor do sensor da temperatura em graus na escala Farenheit.
+
+Para que o Python possa se comunicar com o MySQL é necessário instalar a biblioteca \textbf{mysql-connector-python}: \\
+{\ttfamily\$ python -m pip install mysql-connector-python}
+
+Importamos as bibliotecas necessárias:
+\begin{lstlisting}[]
+import mysql.connector
+import serial
+import simplejson
+from datetime import datetime
+\end{lstlisting}
+
+Criamos o seguinte método para gravar os dados no banco de dados:
+\begin{lstlisting}[]
+def gravar_dados(conn, JSON):
+  try:
+    cursor = con.cursor()
+    cursor.execute("""
+      INSERT INTO dados (datahora, ldr, tempC, tempF)
+      VALUES (%(data)s, %(lums)s, %(grauC)s, %(grauF)s);
+      """, JSON)
+    con.commit()
+    count = cursor.rowcount
+    print(count, "Registro inserido com sucesso!")
+  except (Exception) as error:
+    print("Falhou para inserir registro!", error)
+\end{lstlisting}
+
+Essa função recebe a conexão com o banco e dado em formato JSON lido. Criamos um objeto cursor (a conversação com o MySQL é realizada através desse objeto). Executamos um \textbf{INSERT} no banco que monta os dados através do JSON passado. Damos um \textit{commit()} para gravar os dados, obtemos a resposta quantas linhas foram executadas com o comando, mostramos esse resultado e encerramos a conexão. Caso ocorra qualquer problema este será mostrado um erro pois existe uma proteção do código com um comando \textit{try-except}.
+
+E o seguinte método para obter os dados do componente:
+\begin{lstlisting}[]
+  def ler_dados_serial():
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout=5)
+    con = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="projetoint"
+    )    
+    while True:
+      try:
+        ler = ser.readline()
+        json = simplejson.loads(ler.decode('utf8').replace("'", '"'))
+      except (Exception) as error:
+        print("Falhou para ler registro!", error)
+        continue
+      dt_str = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+      json["data"] = dt_str
+      gravar_dados(con, json)
+
+    ser.exit()
+\end{lstlisting}
+
+Iniciamos a variável \textbf{ser} com os dados da serial (lembrar que ao rodar esse programa, a janela \textbf{Serial Monitor} da Arduino IDE deve estar fechada para evitarmos conflito), são três indicações: a porta que o Arduino está ativo, a velocidade de leitura (que acertamos a 9.600 bounds) e o tempo que deve ser realizada a leitura (cada 5 segundos). 
+
+Para a conexão criamos uma variável \textbf{con} que contém os seguintes valores: \vspace{-1em}
+\begin{itemize}[nolistsep]
+	\item \textbf{host} - servidor (IP) que se encontra o banco.
+	\item \textbf{user} - o nome do usuário.
+	\item \textbf{password} - senha desse usuário.
+	\item \textbf{database} - o nome da base de dados.
+\end{itemize}
+
+Entramos em um laço que colherá os dados. Neste lemos o conteúdo da serial e o colocamos na variável \textbf{ler}, usamos um objeto da biblioteca \textit{simplejson} para converter seu conteúdo para o padrão JSON correto. Para obter os dados decodificamos a saída para o padrão UTF-8 (muitos sistemas Windows exigem essa cláusula, já no padrão Unix não existe essa necessidade). 
+
+Adicionamos o campo \textbf{data} com o valor da data e hora atual (outro pulo do gato) sempre que for gravar data em um banco de dados use o formato \textbf{Y/M/D}. Os formatos \textbf{D/M/Y} e \textbf{M/D/Y} dependem de como está configurado o banco, já o formato \textbf{Y/M/D} não tem erro pois quando o primeiro valor possui 4 dígitos e o banco assume esse formato. 
+
+Gravamos esse na base com uma chamada ao método anteriormente visto com a passagem da variável de conexão e o JSON da leitura. E agora basta disparar esse método na chamada principal:
+\begin{lstlisting}[]
+  if __name__ == '__main__':
+    ler_dados_serial()
+\end{lstlisting}
+
+E podemos armazenar os dados de luminosidade e temperatura para um determinado ambiente. Outra dica interessante seria trocar o componente \textbf{LM35} (que mede apenas temperatura) por um sensor denominado \textbf{DHT11} (que além da temperatura mede também a umidade).
+
+\subsection*{Postgres}
+\textbf{PostgreSQL}, também conhecido como Postgres, é um SGBD (Sistema Gerenciador de Banco de Dados) relacional gratuito e de código aberto que enfatiza a extensibilidade e conformidade com padrão SQL. Seu nome refere-se às suas origens como sucessor do banco \textbf{Ingres} e desenvolvido na Universidade da Califórnia, em \textit{Berkeley}. Este deve estar instalado corretamente em seu ambiente. Por padrão do Postgres, estaremos alocados em um Database de mesmo nome.
+
+Neste criamos um esquema: \\
 {\ttfamily create schema projetoint}
 
 Sempre que trabalhamos com bancos de dados que assim permitam é preferível usar um esquema para separar as tabelas e permitir uma melhor organização. E a seguinte entidade:
@@ -116,10 +218,7 @@ CREATE TABLE projetoint.dados (
 );
 \end{lstlisting}
 
-Nossa entidade possui os campos: \textbf{datahora} como chave primária que contém a data e hora da coleta, \textbf{ldr} com o valor do sensor de luminosidade em uma escala de 0 a 100, \textbf{tempC} para o valor do sensor da temperatura em graus na escala Celsius e \textbf{tempF} para o valor do sensor da temperatura em graus na escala Farenheit.
-
-\section*{Programação Python para gravar no SQL}
-Para que o Python possa se comunicar com o Postgres é necessário instalar a biblioteca \textbf{psycopg2}: \\
+A entidade criada é a cópia exata como vimos para o MySQL. Para que o Python possa se comunicar com o Postgres é necessário instalar a biblioteca \textbf{psycopg2}: \\
 {\ttfamily\$ pip install psycopg2-binary}
 
 Importamos as bibliotecas necessárias:
@@ -132,10 +231,8 @@ from datetime import datetime
 
 Criamos o seguinte método para gravar os dados no banco de dados:
 \begin{lstlisting}[]
-def gravar_dados(JSON):
+def gravar_dados(con, JSON):
   try:
-    con = psycopg2.connect(
-      "host=localhost port=5432 dbname=postgres user=postgres password=postgres")
     cursor = con.cursor()
     cursor.execute("""
       INSERT INTO projetoint.dados (datahora, ldr, tempC, tempF)
@@ -149,40 +246,34 @@ def gravar_dados(JSON):
     print("Falhou para inserir registro!", error)
 \end{lstlisting}
 
-Essa função recebe a conexão com o banco e dado em formato JSON lido. Para a conexão criamos uma variável \textbf{con} que contém os seguintes valores: \vspace{-1em}
-\begin{itemize}[nolistsep]
-	\item \textbf{host} - servidor (IP) que se encontra o banco.
-	\item \textbf{port} - porta de acesso (no caso do Postgres a padrão é 5432).
-	\item \textbf{dbname} - o nome da base de dados.
-	\item \textbf{user} - o nome do usuário.
-	\item \textbf{password} - senha desse usuário.
-\end{itemize}
-
-Criamos um objeto cursor (a conversação com o Postgres é realizada através desse objeto). Executamos um \textbf{INSERT} no banco que monta os dados através do JSON passado. Damos um \textit{commit()} para gravar os dados, obtemos a resposta quantas linhas foram executadas com o comando, mostramos esse resultado e encerramos a conexão. Caso ocorra qualquer problema este será mostrado um erro pois existe uma proteção do código com um comando \textit{try-except}.
-
-E o seguinte método para obter os dados do componente:
+Comparando com a função já vista para o banco MySQL apenas o comando INSERT foi modificado para adicionarmos o esquema do banco. E o seguinte método para obter os dados do componente:
 \begin{lstlisting}[]
   def ler_dados_serial():
     ser = serial.Serial('/dev/ttyACM0', 9600, timeout=5)
+    con = psycopg2.connect(
+        "host=localhost port=5432 dbname=postgres user=postgres password=postgres")    
     while True:
       try:
         ler = ser.readline()
-        json = simplejson.loads(ler).decode('utf8')
+        json = simplejson.loads(ler.decode('utf8').replace("'", '"'))
       except (Exception) as error:
         print("Falhou para ler registro!", error)
         continue
       dt_str = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
       json["data"] = dt_str
-      gravar_dados(conn, json)
+      gravar_dados(con, json)
 
     ser.exit()
 \end{lstlisting}
 
-Iniciamos a variável \textbf{ser} com os dados da serial (lembrar que ao rodar esse programa, a janela \textbf{Serial Monitor} da Arduino IDE deve estar fechada para evitarmos conflito), são três indicações: a porta que o Arduino está ativo, a velocidade de leitura (que acertamos a 9.600 bounds) e o tempo que deve ser realizada a leitura (cada 5 segundos). 
-
-Agora entramos em um laço que colherá os dados. Neste lemos o conteúdo da serial e o colocamos na variável \textbf{ler}, usamos um objeto da biblioteca \textit{simplejson} para converter seu conteúdo para o padrão JSON correto. Para obter os dados decodificamos a saída para o padrão UTF-8 (muitos sistemas Windows exigem essa cláusula, já no padrão Unix não existe essa necessidade). 
-
-Adicionamos o campo \textbf{data} com o valor da data e hora atual (outro pulo do gato) sempre que for gravar data em um banco de dados use o formato \textbf{Y/M/D}. Os formatos \textbf{D/M/Y} e \textbf{M/D/Y} dependem de como está configurado o banco, já o formato \textbf{Y/M/D} não tem erro pois quando o primeiro valor possui 4 dígitos e o banco assume esse formato. 
+Novamente pouquíssimas modificações aqui somente quanto ao objeto de conexão \textbf{con} que contém os seguintes valores: \vspace{-1em}
+\begin{itemize}[nolistsep]
+	\item \textbf{host} - servidor (IP) que se encontra o banco.
+	\item \textbf{port} - porta que se encontra o banco.
+	\item \textbf{dbname} - o nome da base de dados.
+	\item \textbf{user} - o nome do usuário.
+	\item \textbf{password} - senha desse usuário.
+\end{itemize}
 
 Gravamos esse na base com uma chamada ao método anteriormente visto com a passagem da variável de conexão e o JSON da leitura. E agora basta disparar esse método na chamada principal:
 \begin{lstlisting}[]
@@ -190,9 +281,9 @@ Gravamos esse na base com uma chamada ao método anteriormente visto com a passa
     ler_dados_serial()
 \end{lstlisting}
 
-E podemos armazenar os dados de luminosidade e temperatura para um determinado ambiente. Outra dica interessante seria trocar o componente \textbf{LM35} (que mede apenas temperatura) por um sensor denominado \textbf{DHT11} (que além da temperatura mede também a umidade).
+O que percebemos é todo banco SQL processa a inclusão dos valores praticamente de mesmo modo, sendo necessário mudar o conector e adaptar a instrução SQL de forma correta.
 
-\section*{Python e os Bancos de Dados NoSQL}
+\section*{Bancos de Dados NoSQL}
 Existem quatro tipos de bancos no padrão NoSQL, não pretendo aqui debater a vantagem de cada um deles, vamos realizar as modificações necessárias no programa em Python possa se utilizar um de cada tipo.
 
 \subsection*{MongoDB - Tipo: Orientado a Documento}
