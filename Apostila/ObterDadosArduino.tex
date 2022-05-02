@@ -176,7 +176,7 @@ E o seguinte método para obter os dados do componente:
       json["data"] = dt_str
       gravar_dados(con, json)
 
-    ser.exit()
+    con.close()
 \end{lstlisting}
 
 Iniciamos a variável \textbf{ser} com os dados da serial (lembrar que ao rodar esse programa, a janela \textbf{Serial Monitor} da Arduino IDE deve estar fechada para evitarmos conflito), são três indicações: a porta que o Arduino está ativo, a velocidade de leitura (que acertamos a 9.600 bounds) e o tempo que deve ser realizada a leitura (cada 5 segundos). 
@@ -241,7 +241,6 @@ def gravar_dados(con, JSON):
     con.commit()
     count = cursor.rowcount
     print(count, "Registro inserido com sucesso!")
-    con.close()
   except (Exception) as error:
     print("Falhou para inserir registro!", error)
 \end{lstlisting}
@@ -263,7 +262,7 @@ Comparando com a função já vista para o banco MySQL apenas o comando INSERT f
       json["data"] = dt_str
       gravar_dados(con, json)
 
-    ser.exit()
+    con.close()
 \end{lstlisting}
 
 Novamente pouquíssimas modificações aqui somente quanto ao objeto de conexão \textbf{con} que contém os seguintes valores: \vspace{-1em}
